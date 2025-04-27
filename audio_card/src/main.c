@@ -62,7 +62,6 @@ int main(void)
 			return 0;
 		}
 		current_led_indx = (current_led_indx + 1) % LEDS_N;
-		printk("Hey world\r\n");
 		k_msleep(SLEEP_TIME_MS);
 	}
 	return 0;
