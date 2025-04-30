@@ -11,7 +11,7 @@
 			{
 				"name": "audio_card",
 				"type": "cortex-debug",
-				"request": "launch",
+				"request": "attach",
 				"executable": "${workspaceFolder}/audio_card/build/zephyr/zephyr.elf",
 				"servertype": "stlink",
 				"device": "STM32F446RE",
