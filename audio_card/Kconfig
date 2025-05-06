@@ -1,0 +1,7 @@
+source "Kconfig.zephyr"
+
+config SAMPLE_FREQ
+	int "Sample rate"
+	default 8000
+	help
+	  Sample frequency of the system.
