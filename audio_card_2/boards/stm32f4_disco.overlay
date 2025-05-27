@@ -1,9 +1,0 @@
-/ {
-	aliases {
-		ledg = &green_led_4;
-		ledo = &orange_led_3;
-		ledr = &red_led_5;
-		ledb = &blue_led_6;
-	};
-};
-

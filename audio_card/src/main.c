@@ -18,14 +18,9 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 int main(void)
 {
-	if (usb_enable(NULL)) {
-		LOG_ERR("Cannot enable USB!");
-		return 0;
-	}
-	LOG_INF("USB enabled.");
 
 	while(1) {
-		
+		k_msleep(1000);
 	}
 }
  
