@@ -4,6 +4,7 @@
 		ledo = &orange_led_3;
 		ledr = &red_led_5;
 		ledb = &blue_led_6;
+		i2s-codec-tx = &i2s3;
 	};
 
 	chosen {

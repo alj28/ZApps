@@ -14,6 +14,13 @@ manifest:
           - hal_stm32
           - cmsis
           - mbedtls
+          - cmsis-dsp  
+
+    #- name: cmsis-dsp
+    #  remote: zephyrproject
+    #  revision: main  # Or pin to a version like 1.14.0
+    #  path: modules/hal/cmsis-dsp
+
 
   self:
     path: zephyr

@@ -12,7 +12,7 @@
 				"name": "audio_card_2",
 				"type": "cortex-debug",
 				"request": "attach",
-				"executable": "${workspaceFolder}/audio_card_2/build/zephyr/zephyr.elf",
+				"executable": "${workspaceFolder}/audio_card/build/zephyr/zephyr.elf",
 				"servertype": "stlink",
 				"device": "STM32F446RE",
 				"interface": "swd",
