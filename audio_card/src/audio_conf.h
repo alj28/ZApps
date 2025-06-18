@@ -1,7 +1,9 @@
 #ifndef _AUDIO_CONF_H_
 #define _AUDIO_CONF_H_
 
-#define SAMPLE_FREQUENCY        (CONFIG_SAMPLE_FREQ)
+#include <zephyr/devicetree.h>
+
+#define SAMPLE_FREQUENCY        DT_PROP(DT_NODELABEL(hs_0), hp_sample_rate_hz)
 #define SAMPLE_BYTE_WIDTH       (sizeof(uint16_t))
 #define SAMPLE_BIT_WIDTH        (8U * SAMPLE_BYTE_WIDTH)
 #define NUMBER_OF_CHANNELS      (2)

@@ -18,7 +18,7 @@
 		compatible = "zephyr,cdc-acm-uart";
 	};
 
-	hs_0 {
+	hs_0: hs_0 {
 		compatible = "usb-audio-hs";
 		mic-feature-mute;
 		mic-channel-l;
@@ -32,6 +32,8 @@
 		volume-max = <0x0500>;
 		volume-min = <0xBA00>;
 		volume-res = <0x100>;
+
+		hp-sample-rate-hz = <16000>;
 	};
 };
 
