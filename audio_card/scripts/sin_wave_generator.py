@@ -10,7 +10,7 @@ np.seterr(over='ignore')
 
 F_SIGNAL = np.int16(500)
 F_SAMPLING = np.int32(8000)
-LEN_SIGNAL_S = 0.002
+LEN_SIGNAL_S = 0.001
 
 SG_ANGLE_INC_Q31 = np.int32((np.float32(0x1 << 31) * np.float32(2.0) * np.pi * np.float32(F_SIGNAL)) / np.pi / np.float32(F_SAMPLING))
 LEN_SIGNAL_N_SAMPLES = np.uint32(np.ceil(LEN_SIGNAL_S * F_SAMPLING))
