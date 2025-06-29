@@ -7,18 +7,13 @@
 
 #include "audio_output_codec.h"
 #include "audio_conf.h"
+#include "test_signal_generator.h"
+#include "audio_stream.h"
 
 #include "arm_math.h"
 
 #define STACKSIZE 1024
 #define PRIORITY 5
-
-#define SG_SIGNAL_FREQUENCY     (500)
-#define SG_ANGLE_INC_Q31(_f)        (int32_t)(((float)(0x1UL << 31) * 2.0f * 3.14f * (float)(_f)) / 3.14f / (float)(SAMPLE_FREQUENCY))
-
-static int32_t current_angle = 0;
-int32_t angle_inc = SG_ANGLE_INC_Q31(SG_SIGNAL_FREQUENCY);
-static void generate_signal_section(int16_t* const mem, size_t size);
 
 LOG_MODULE_REGISTER(audio_output_codec, LOG_LEVEL_INF);
 
@@ -26,13 +21,10 @@ const struct device *codec_control = DEVICE_DT_GET(DT_NODELABEL(audio_codec));
 const struct device *codec_stream = DEVICE_DT_GET(DT_ALIAS(i2s_codec_tx));
 
 
-K_MEM_SLAB_DEFINE_STATIC(audio_output_codec_slab, BYTES_PER_SOF, 4, 4);
+K_MEM_SLAB_DEFINE_STATIC(audio_output_codec_slab, AUDIO_STREAM_CHUNK_SIZE, 4, 4);
 
 static int init(void)
 {
-    LOG_INF("Test signal frequency: %d", SG_SIGNAL_FREQUENCY);
-    LOG_INF("Angle increment (Q31): %d", angle_inc);
-
     int err = 0;
     if (!device_is_ready(codec_control)) {
         LOG_ERR("%s is not ready...", codec_control->name);
@@ -89,90 +81,31 @@ SYS_INIT_NAMED(
 
 static void thread(void *p1, void *p2, void *p3)
 {
-    void* pmem = NULL;
+    int ret;
     bool started = false;
-    int ret = k_mem_slab_alloc(
-        &audio_output_codec_slab,
-        &pmem,
-        K_FOREVER
-    );
-    if (0 > ret) {
-        LOG_ERR("Cannot allocate memory slab...");
-        return;
-    }
-    generate_signal_section((int16_t*)pmem, SAMPLES_PER_SOF);
 
-    while(1) {
-        ret = k_mem_slab_alloc(
+    while (1) {
+        struct audio_chunk* audio_chunk = audio_stream_chunk_get(K_FOREVER);
+        void* pmem = NULL;
+        size_t audio_chunk_size = audio_chunk->size;
+        k_mem_slab_alloc(
             &audio_output_codec_slab,
             &pmem,
-            Z_TIMEOUT_TICKS(2000UL)
+            K_FOREVER
         );
-        if (0 > ret) {
-            LOG_ERR("Cannot allocate memory slab...");
-            return;
-        }
-        generate_signal_section((int16_t*)pmem, SAMPLES_PER_SOF);
-
-        ret = i2s_write(codec_stream, pmem, BYTES_PER_SOF);
-        if (0 > ret) {
-            LOG_ERR("Cannot write to i2s...");
-            return;
-        }
+        memcpy(pmem, (void*)audio_chunk->mem, audio_chunk->size);
+        audio_stream_chunk_release(audio_chunk);
+        i2s_write(codec_stream, pmem, audio_chunk_size);
 
         if (!started) {
             i2s_trigger(codec_stream, I2S_DIR_TX, I2S_TRIGGER_START);
             LOG_INF("I2S started...");
             started = true;
         }
-
     }
 }
+
 
 K_THREAD_DEFINE(audio_output_codec_thread_id, STACKSIZE, thread, NULL, NULL, NULL,
 		PRIORITY, 0, 0);
 
-
-static void generate_signal_section(int16_t* const mem, size_t size)
-{
-    size_t n_samples = size;
-    //assert(0 == (n_samples % 2));
-
-    for (size_t sample_c = 0; sample_c < n_samples; sample_c++) {
-        size_t index = 2*sample_c;
-        int32_t l = 0L, r = 0L;
-        arm_sin_cos_q31(current_angle, &l, &r);
-        mem[index] = (l >> 16);
-        mem[index + 1] = (r >> 16);
-        current_angle += angle_inc;
-    }
-}
-
-#include <zephyr/shell/shell.h>
-static int cmd_set_test_signal_frequency(const struct shell *sh, size_t argc, char **argv)
-{
-    //shell_print(sh, "Rebooting the device...");
-    //k_sleep(K_MSEC(1000)); 
-    //sys_reboot(SYS_REBOOT_COLD);
-    //return 0;
-
-    if (argc < 2) {
-        shell_error(sh, "Invalid number of arguments...");
-        return -1;
-    }
-
-    int32_t fs = atoi(argv[1]);
-    if (fs < 50) {
-        shell_error(sh, "Frequency %d is too low (limit %d Hz).", fs, 50);
-        return -1;
-    } else if (fs > SAMPLE_FREQUENCY) {
-        shell_error(sh, "Frequency %d is too high. (limit %d Hz)", fs, SAMPLE_FREQUENCY);
-        return -1;
-    }
-
-    angle_inc = SG_ANGLE_INC_Q31(fs);
-    shell_print(sh, "OK");
-    return 0;
-}
-
-SHELL_CMD_REGISTER(sf, NULL, "Signal freqeuncy...", cmd_set_test_signal_frequency);

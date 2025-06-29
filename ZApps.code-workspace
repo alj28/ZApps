@@ -4,12 +4,19 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"files.associations": {
+			"audio_output_codec.h": "c",
+			"test_signal_generator.h": "c",
+			"audio_conf.h": "c",
+			"kernel.h": "c"
+		}
+	},
 	"launch": {
 		"version": "0.2.0",
 		"configurations": [
 			{
-				"name": "audio_card_2",
+				"name": "audio_card",
 				"type": "cortex-debug",
 				"request": "attach",
 				"executable": "${workspaceFolder}/audio_card/build/zephyr/zephyr.elf",
