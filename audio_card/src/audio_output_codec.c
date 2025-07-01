@@ -105,7 +105,6 @@ static void thread(void *p1, void *p2, void *p3)
     }
 }
 
-
 K_THREAD_DEFINE(audio_output_codec_thread_id, STACKSIZE, thread, NULL, NULL, NULL,
 		PRIORITY, 0, 0);
 

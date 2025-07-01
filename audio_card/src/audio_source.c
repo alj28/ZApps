@@ -11,9 +11,6 @@
 
 LOG_MODULE_REGISTER(audio_source, LOG_LEVEL_INF);
 
-
-
-
 static void thread(void *p1, void *p2, void *p3)
 {
     while (1) {

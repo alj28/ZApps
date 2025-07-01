@@ -20,8 +20,10 @@ void generate_signal_section(int16_t* const mem, size_t size)
         size_t index = 2*sample_c;
         int32_t l = 0L, r = 0L;
         arm_sin_cos_q31(current_angle, &l, &r);
-        mem[index] = (l >> 16);
-        mem[index + 1] = (r >> 16);
+        //mem[index] = (l >> 16);
+        //mem[index + 1] = (r >> 16);
+        mem[index + 1] = (l >> 16);
+        mem[index] = (r >> 16);
         current_angle += angle_inc;
     }
 }

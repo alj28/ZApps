@@ -9,7 +9,15 @@
 			"audio_output_codec.h": "c",
 			"test_signal_generator.h": "c",
 			"audio_conf.h": "c",
-			"kernel.h": "c"
+			"kernel.h": "c",
+			"array": "c",
+			"bitset": "c",
+			"string_view": "c",
+			"initializer_list": "c",
+			"ranges": "c",
+			"regex": "c",
+			"utility": "c",
+			"util.h": "c"
 		}
 	},
 	"launch": {

@@ -8,12 +8,10 @@ target_sources(app
         src/audio.c
         src/audio_conf.c
         src/audio_output_codec.c
-        #src/audio_output_codec_2.c
         src/audio_source.c
         src/audio_stream.c
         #src/audio_usb.c
         src/blink.c
-        src/main.c
         src/shell_cmd.c
         src/test_signal_generator.c
         src/usb.c
