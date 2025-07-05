@@ -26,6 +26,8 @@ K_QUEUE_DEFINE(
 K_FIFO_DEFINE(
     audio_stream_fifo
 );
+static size_t audio_stream_fifo_entries_count = 0;
+struct k_spinlock audio_stream_fifo_entries_count_lock;
 
 static inline struct fifo_entry* audio_chunk_to_fifo_entry_ptr(struct audio_chunk* const audio_chunk) {
     return CONTAINER_OF(audio_chunk, struct fifo_entry, data);
@@ -34,15 +36,15 @@ static inline struct fifo_entry* audio_chunk_to_fifo_entry_ptr(struct audio_chun
 
 struct audio_chunk* audio_stream_chunk_alloc(k_timeout_t timeout)
 {
-    struct fifo_entry* rv;
+    struct fifo_entry* rv = NULL;
     int err = k_mem_slab_alloc(
         &audio_stream_slab,
         (void*)&rv,
         timeout
     );
     
-    if (0 > err) {
-        LOG_ERR("Cannot allocate audio stream chunk. (err %d)", err);
+    if ((0 > err) || (NULL == rv)) {
+        LOG_DBG("Cannot allocate audio stream chunk. (err %d)", err);
         rv = NULL;
     }
     
@@ -56,6 +58,9 @@ int audio_stream_chunk_commit(struct audio_chunk* chunk)
         &audio_stream_fifo,
         (void*)entry
     );
+    k_spinlock_key_t key = k_spin_lock(&audio_stream_fifo_entries_count_lock);
+    audio_stream_fifo_entries_count++;
+    k_spin_unlock(&audio_stream_fifo_entries_count_lock, key);
     return 0;
 }
 
@@ -76,6 +81,14 @@ int audio_stream_chunk_release(struct audio_chunk *chunk)
         &audio_stream_slab,
         (void*)entry
     );
+    k_spinlock_key_t key = k_spin_lock(&audio_stream_fifo_entries_count_lock);
+    audio_stream_fifo_entries_count--;
+    k_spin_unlock(&audio_stream_fifo_entries_count_lock, key);
     return 0;
+}
+
+size_t audio_stream_pending_chunk_count(void)
+{
+    return audio_stream_fifo_entries_count;
 }
 

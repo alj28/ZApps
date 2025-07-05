@@ -17,7 +17,12 @@
 			"ranges": "c",
 			"regex": "c",
 			"utility": "c",
-			"util.h": "c"
+			"util.h": "c",
+			"audio_stream.h": "c",
+			"clock_control.h": "c",
+			"string.h": "c",
+			"log.h": "c",
+			"shell.h": "c"
 		}
 	},
 	"launch": {
