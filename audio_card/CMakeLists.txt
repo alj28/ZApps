@@ -10,8 +10,10 @@ target_sources(app
         src/audio_output_codec.c
         #src/audio_source.c
         src/audio_stream.c
+        src/audio_timer.c
         src/audio_usb.c
         src/blink.c
+        src/board_shell.c
         src/shell_cmd.c
         src/test_signal_generator.c
         src/usb.c

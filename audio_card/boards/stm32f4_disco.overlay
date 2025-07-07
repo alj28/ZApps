@@ -5,6 +5,7 @@
 		ledr = &red_led_5;
 		ledb = &blue_led_6;
 		i2s-codec-tx = &i2s3;
+		uac2-tim = &timers5_counter;
 	};
 
 	chosen {
@@ -36,4 +37,16 @@
 		hp-sample-rate-hz = <16000>;
 	};
 };
+
+&timers5 {
+	status = "okay";
+	st,prescaler = < 41999 >;
+	timers5_counter: counter {
+		status = "okay";
+	};
+};
+
+
+
+
 

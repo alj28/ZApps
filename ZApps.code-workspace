@@ -22,7 +22,9 @@
 			"clock_control.h": "c",
 			"string.h": "c",
 			"log.h": "c",
-			"shell.h": "c"
+			"shell.h": "c",
+			"init.h": "c",
+			"device.h": "c"
 		}
 	},
 	"launch": {
