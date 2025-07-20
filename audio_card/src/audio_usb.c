@@ -1,15 +1,20 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/shell/shell.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/usb/class/usb_audio.h>
 
 #include "audio_conf.h"
 #include "audio_stream.h"
 #include "audio_output_codec.h"
+#include "audio_feedback_counter.h"
 
 
 LOG_MODULE_REGISTER(audio_usb, LOG_LEVEL_INF);
+
+static uint32_t sof_counter_last_val = 0;
+static uint32_t average_consumed_samples_per_sof_q14 = 0;
 
 static volatile uint32_t data_received_counter = 0;
 static volatile bool print_received_data = false;
@@ -68,18 +73,17 @@ static void data_received(const struct device *dev,
 		data_received_counter++;
 	}
 #elif SELECT == 2
+	uint16_t sof_count_state = audio_sof_counter();
 	struct audio_chunk* audio_chunk = audio_stream_chunk_alloc(K_NO_WAIT);
 	if (NULL != audio_chunk) {
 		memcpy(audio_chunk->mem, buffer->data, BYTES_PER_SOF);
-		//int16_t* p_r = buffer->data;
-		//int16_t* p_w = audio_chunk->mem;
-		//for (size_t i = 0; i < 16; i++) {
-		//	p_w[2*i] = (p_r[2*i] << 3);
-		//	p_w[2*i+1] = (p_r[2*i + 1] << 3);
-		//}
 		audio_chunk->size = BYTES_PER_SOF;
 		audio_stream_chunk_commit(audio_chunk);
 	}
+	uint16_t sof_count_diff = sof_count_state - sof_counter_last_val;
+	sof_counter_last_val = sof_count_state;
+	average_consumed_samples_per_sof_q14 = (average_consumed_samples_per_sof_q14 + (sof_count_diff << 14)) >> 1;
+
 #endif
 
 	net_buf_unref(buffer);
@@ -140,8 +144,24 @@ static int init(void)
 }
 
 SYS_INIT_NAMED(
-    audio_usb,
+    audio_usb_init,
     init,
     APPLICATION,
     50
 );
+
+
+static int cmd_average_consumed_samples_per_sof(const struct shell *sh, size_t argc, char **argv)
+{
+	uint32_t average_consumed_samples_per_sof_q14_cpy = average_consumed_samples_per_sof_q14;
+	float average_consumed_samples_per_sof = ((float)average_consumed_samples_per_sof_q14_cpy / (float)(0x1 << 14));
+	shell_print(sh, "Average consumed samples per sof (float): %.08f", average_consumed_samples_per_sof);
+    return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_audio_usb,
+    SHELL_CMD(avg_samples_per_sof, NULL, "Average number of samples consumed per SOF.", cmd_average_consumed_samples_per_sof),
+    SHELL_SUBCMD_SET_END /* Must be last */
+);
+
+SHELL_COND_CMD_REGISTER(CONFIG_AUDIO_USB_SHELL, audio_usb, &sub_audio_usb, "Audio USB commands", NULL);

@@ -9,5 +9,9 @@ config APP_USE_STM32
 	select USE_STM32_HAL_TIM_EX
 	select USE_STM32_HAL_GPIO_EX
 
+config AUDIO_USB_SHELL
+	default y
+	bool
+
 
 source "Kconfig.zephyr"

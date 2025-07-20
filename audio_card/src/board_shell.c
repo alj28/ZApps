@@ -25,16 +25,8 @@ static int cmd_clocks(const struct shell *sh, size_t argc, char **argv)
     return 0;
 }
 
-#include "audio_feedback_counter.h"
-static int cmd_get_sof_input_state(const struct shell *sh, size_t argc, char **argv)
-{
-    shell_print(sh, "CNT: %d", audio_sof_counter());
-    return 0;
-}
-
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_stm32f4_disco,
     SHELL_CMD(clocks, NULL, "Internal buses clock frequencies.", cmd_clocks),
-    SHELL_CMD(sof_in, NULL, "...", cmd_get_sof_input_state),
     SHELL_SUBCMD_SET_END /* Must be last */
 );
 
