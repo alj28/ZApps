@@ -1,0 +1,13 @@
+
+mainmenu "Audio Card"
+
+config APP_USE_STM32
+	default y
+	bool
+	select USE_STM32_HAL_TIM
+	select USE_STM32_HAL_GPIO
+	select USE_STM32_HAL_TIM_EX
+	select USE_STM32_HAL_GPIO_EX
+
+
+source "Kconfig.zephyr"

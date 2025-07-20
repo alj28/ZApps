@@ -24,7 +24,9 @@
 			"log.h": "c",
 			"shell.h": "c",
 			"init.h": "c",
-			"device.h": "c"
+			"device.h": "c",
+			"stm32f4xx_hal_gpio.h": "c",
+			"stm32f4xx_hal.h": "c"
 		}
 	},
 	"launch": {
@@ -44,7 +46,8 @@
 				],
 				"runToEntryPoint": "main",
 				"cwd": "${workspaceFolder}",
-				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
+				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+				"svdFile": "${workspaceFolder}/svd/STM32F407.svd"
 			  }
 		],
 		"compounds": []

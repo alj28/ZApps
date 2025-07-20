@@ -7,6 +7,7 @@ target_sources(app
     PRIVATE
         src/audio.c
         src/audio_conf.c
+        src/audio_feedback_counter.c
         src/audio_output_codec.c
         #src/audio_source.c
         src/audio_stream.c

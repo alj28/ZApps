@@ -46,6 +46,11 @@
 	};
 };
 
+&timers3 {
+	status = "okay";
+	st,prescaler = <0>;
+};
+
 
 
 
