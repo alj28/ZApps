@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <sample_usbd.h>
 
 #include <string.h>
 
@@ -99,29 +98,6 @@ static void input_cb(struct input_event *evt, void *user_data)
 
 INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 
-#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
-static int enable_usb_device_next(void)
-{
-	struct usbd_context *sample_usbd;
-	int err;
-
-	sample_usbd = sample_usbd_init_device(NULL);
-	if (sample_usbd == NULL) {
-		LOG_ERR("Failed to initialize USB device");
-		return -ENODEV;
-	}
-
-	err = usbd_enable(sample_usbd);
-	if (err) {
-		LOG_ERR("Failed to enable device support");
-		return err;
-	}
-
-	LOG_DBG("USB device support enabled");
-
-	return 0;
-}
-#endif /* defined(CONFIG_USB_DEVICE_STACK_NEXT) */
 
 static void int_in_ready_cb(const struct device *dev)
 {
@@ -143,11 +119,8 @@ int main(void)
 		return 0;
 	}
 
-#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
-	hid_dev = DEVICE_DT_GET_ONE(zephyr_hid_device);
-#else
 	hid_dev = device_get_binding("HID_0");
-#endif
+
 	if (hid_dev == NULL) {
 		LOG_ERR("Cannot get USB HID Device");
 		return 0;
@@ -165,11 +138,8 @@ int main(void)
 
 	usb_hid_init(hid_dev);
 
-#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
-	ret = enable_usb_device_next();
-#else
 	ret = usb_enable(status_cb);
-#endif
+
 	if (ret != 0) {
 		LOG_ERR("Failed to enable USB");
 		return 0;
