@@ -1,0 +1,57 @@
+/ {
+	aliases {
+		ledg = &green_led_4;
+		ledo = &orange_led_3;
+		ledr = &red_led_5;
+		ledb = &blue_led_6;
+		i2s-codec-tx = &i2s3;
+		uac2-tim = &timers5_counter;
+	};
+
+	chosen {
+		zephyr,console = &cdc_acm_uart0;
+		zephyr,shell-uart = &cdc_acm_uart0;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+
+	hs_0: hs_0 {
+		compatible = "usb-audio-hs";
+		mic-feature-mute;
+		mic-channel-l;
+		mic-channel-r;
+
+		hp-feature-mute;
+		hp-channel-l;
+		hp-channel-r;
+
+		hp-feature-volume;
+		volume-max = <0x0500>;
+		volume-min = <0xBA00>;
+		volume-res = <0x100>;
+
+		hp-sample-rate-hz = <16000>;
+	};
+};
+
+&timers5 {
+	status = "okay";
+	st,prescaler = < 41999 >;
+	timers5_counter: counter {
+		status = "okay";
+	};
+};
+
+&timers3 {
+	status = "okay";
+	st,prescaler = <0>;
+};
+
+
+
+
+
