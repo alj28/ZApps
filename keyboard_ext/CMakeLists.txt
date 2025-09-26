@@ -1,9 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.20.0)
-
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(keybord_ext)
+project(hid-mouse)
 
-target_sources(app
+include(common.cmake)
+FILE(GLOB app_sources src/*.c)
+target_sources(
+    app 
+    PRIVATE 
+    src/main.c
+    #src/sample_usbd_init.c
+)
+target_include_directories(
+    app
     PRIVATE
-        src/main.c
+    src
 )
