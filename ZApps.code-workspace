@@ -4,7 +4,11 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"files.associations": {
+			"sample_usbd.h": "c"
+		}
+	},
 	"launch": {
 		"version": "0.2.0",
 		"configurations": [
@@ -13,6 +17,22 @@
 				"type": "cortex-debug",
 				"request": "launch",
 				"executable": "${workspaceFolder}/audio_card/build/zephyr/zephyr.elf",
+				"servertype": "stlink",
+				"device": "STM32F446RE",
+				"interface": "swd",
+				"configFiles": [
+				  "interface/stlink.cfg",
+				  "target/stm32f4x.cfg"
+				],
+				"runToEntryPoint": "main",
+				"cwd": "${workspaceFolder}",
+				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
+			},
+			{
+				"name": "keyboard_ext",
+				"type": "cortex-debug",
+				"request": "launch",
+				"executable": "${workspaceFolder}/keyboard_ext/build/zephyr/zephyr.elf",
 				"servertype": "stlink",
 				"device": "STM32F446RE",
 				"interface": "swd",

@@ -8,7 +8,9 @@ FILE(GLOB app_sources src/*.c)
 target_sources(
     app 
     PRIVATE 
-    src/main.c
+    src/app_usb.c
+    src/app_inputs.c
+    src/app_cli.c
 )
 target_include_directories(
     app
