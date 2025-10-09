@@ -1,3 +1,4 @@
+
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
@@ -8,5 +9,7 @@
 #define CONFIG_APP_USB_REPORT_QUEUE_LEN         (10)
 
 #define CONFIG_APP_CLI_CLICK_TIME               (100)
+
+#define CONFIG_APP_MAX_KEYS_REPORTED            (6)         // do not modify this
 
 #endif 

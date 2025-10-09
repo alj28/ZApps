@@ -12,6 +12,7 @@
 #include <zephyr/usb/class/usb_hid.h>
 
 #include "config.h"
+#include "app_keyboard.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app_usb, LOG_LEVEL_INF);
@@ -20,6 +21,7 @@ static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 static enum usb_dc_status_code usb_status;
 
 static K_SEM_DEFINE(ep_write_sem, 0, 1);
+static K_SEM_DEFINE(new_keyboard_state, 1, 1);
 
 static inline void status_cb(enum usb_dc_status_code status, const uint8_t *param)
 {
@@ -36,65 +38,15 @@ static const struct hid_ops ops = {
 	.int_in_ready = int_in_ready_cb,
 };
 
-struct key_press_evt {
-    uint32_t key_code;
-    bool pressed;
-};
 
-
-K_MEM_SLAB_DEFINE_STATIC(
-    app_usb_report_queue_mem, 
-    sizeof(struct key_press_evt), 
-    CONFIG_APP_USB_REPORT_QUEUE_LEN, 
-    4
-);
-K_FIFO_DEFINE(app_usb_report_queue_handler);
-
-int app_usb_report_key_press(uint32_t code, bool is_pressed, k_timeout_t timeout)
+void app_usb_report_key_press(void)
 {
-    int rv = 0;
-    struct key_press_evt* evt = NULL;
-
-    do {
-        rv = k_mem_slab_alloc(
-            &app_usb_report_queue_mem,
-            (void**)&evt,
-            timeout
-        );
-        if (0 != rv) {
-            break;
-        }
-
-        *evt = (struct key_press_evt){
-            .key_code = code,
-            .pressed = is_pressed
-        };
-
-        k_fifo_put(
-            &app_usb_report_queue_handler,
-            evt;
-        );
-    } while (false);
-
-    return rv;
+    k_sem_give(&new_keyboard_state);
 }
 
-static struct key_press_evt* app_usb_get_key_press_evt(k_timeout_t timeout)
+static int app_usb_get_key_press_evt(k_timeout_t timeout)
 {
-    struct key_press_evt* evt = k_fifo_get(
-        &app_usb_report_queue_handler,
-        timeout
-    );
-
-    return evt;
-}
-
-static void app_usb_release_key_press_evt(struct key_press_evt* evt)
-{
-    k_mem_slab_free(
-        &app_usb_report_queue_mem,
-        evt
-    );
+    return k_sem_take(&new_keyboard_state, timeout);
 }
 
 
@@ -105,14 +57,22 @@ static void app_usb_thread(void*, void*, void*)
 {
 
     while (true) {
-        struct key_press_evt* evt = app_usb_get_key_press_evt(K_FOREVER);
-        if (NULL == evt) {
+        int rv = app_usb_get_key_press_evt(K_FOREVER);
+        if (0 != rv) {
             continue;
         }
 
-        LOG_INF("Key press code: %d, is_pressed: %s", evt->key_code, evt->pressed ? "true" : "false");
+        uint32_t keys_pressed[CONFIG_APP_MAX_KEYS_REPORTED] = {0};
+        size_t n_keys_pressed = 0;
+        rv = app_keyboard_get_pressed(keys_pressed, &n_keys_pressed, K_MSEC(0));
+
+        LOG_INF("Pressed keys:");
+        for (size_t i = 0; i < n_keys_pressed; i++) {
+            LOG_INF("\t%d: 0x%08x", i, keys_pressed[i]);
+        }
+        LOG_INF("\n");
     
-        app_usb_release_key_press_evt(evt);
+
     }
 }
 

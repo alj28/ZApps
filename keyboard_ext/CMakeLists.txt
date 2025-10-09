@@ -11,6 +11,7 @@ target_sources(
     src/app_usb.c
     src/app_inputs.c
     src/app_cli.c
+    src/app_keyboard.c
 )
 target_include_directories(
     app

@@ -6,6 +6,7 @@
 #include <zephyr/shell/shell.h>
 
 #include "app_usb.h"
+#include "app_keyboard.h"
 #include "config.h"
 
 static int key_simulation_argv_parser(const struct shell* sh, size_t argc, char** argv, uint32_t* key_code) 
@@ -60,7 +61,8 @@ static int cmd_press(const struct shell *sh, size_t argc, char **argv)
             break;
         }
 
-        rv = app_usb_report_key_press(key_code, true, K_MSEC(500));
+     	rv = app_keyboard_report_key_press(key_code, true, K_MSEC(500));  
+        app_usb_report_key_press();
     } while(false);
 
     return rv;
@@ -78,7 +80,8 @@ static int cmd_release(const struct shell *sh, size_t argc, char **argv)
             break;
         }
 
-        rv = app_usb_report_key_press(key_code, false, K_MSEC(500));
+	rv = app_keyboard_report_key_press(key_code, false, K_MSEC(500));        
+	app_usb_report_key_press();
     } while(false);
 
     return rv;
@@ -96,14 +99,16 @@ static int cmd_click(const struct shell *sh, size_t argc, char **argv)
             break;
         }
 
-        rv = app_usb_report_key_press(key_code, true, K_MSEC(500));
+	rv = app_keyboard_report_key_press(key_code, true, K_MSEC(500));        
+	app_usb_report_key_press();
         if (0 != rv) {
             break;
         }
 
         k_sleep(K_MSEC(CONFIG_APP_CLI_CLICK_TIME));
 
-        rv = app_usb_report_key_press(key_code, false, K_MSEC(500));
+	rv = app_keyboard_report_key_press(key_code, false, K_MSEC(500));        
+	app_usb_report_key_press();
         if (0 != rv) {
             break;
         }
