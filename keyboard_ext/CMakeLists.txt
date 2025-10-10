@@ -12,6 +12,7 @@ target_sources(
     src/app_inputs.c
     src/app_cli.c
     src/app_keyboard.c
+    src/app_usb_keyboard.c
 )
 target_include_directories(
     app

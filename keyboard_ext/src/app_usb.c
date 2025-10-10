@@ -13,12 +13,15 @@
 
 #include "config.h"
 #include "app_keyboard.h"
+#include "app_usb_keyboard.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app_usb, LOG_LEVEL_INF);
 
 static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 static enum usb_dc_status_code usb_status;
+
+static const struct device* hid_dev = NULL;
 
 static K_SEM_DEFINE(ep_write_sem, 0, 1);
 static K_SEM_DEFINE(new_keyboard_state, 1, 1);
@@ -62,17 +65,27 @@ static void app_usb_thread(void*, void*, void*)
             continue;
         }
 
-        uint32_t keys_pressed[CONFIG_APP_MAX_KEYS_REPORTED] = {0};
-        size_t n_keys_pressed = 0;
-        rv = app_keyboard_get_pressed(keys_pressed, &n_keys_pressed, K_MSEC(0));
+        //uint32_t keys_pressed[CONFIG_APP_MAX_KEYS_REPORTED] = {0};
+        //size_t n_keys_pressed = 0;
+        //rv = app_keyboard_get_pressed(keys_pressed, &n_keys_pressed, K_MSEC(0));
 
-        LOG_INF("Pressed keys:");
-        for (size_t i = 0; i < n_keys_pressed; i++) {
-            LOG_INF("\t%d: 0x%08x", i, keys_pressed[i]);
+        //LOG_INF("Pressed keys:");
+        //for (size_t i = 0; i < n_keys_pressed; i++) {
+        //    LOG_INF("\t%d: 0x%08x", i, keys_pressed[i]);
+        //}
+        //LOG_INF("\n");
+        
+        UDC_STATIC_BUF_DEFINE(report, APP_USB_KEYBOARD_PACKET_SIZE);
+
+        app_usb_keyboard_generate_packet((struct usb_hid_packet*)report);
+
+        rv = hid_int_ep_write(hid_dev, report, APP_USB_KEYBOARD_PACKET_SIZE, NULL);
+        if (0 == rv) {
+            k_sem_take(&ep_write_sem, K_FOREVER);
+            LOG_INF("USB-HID keyboard report sent.");
+        } else {
+            LOG_ERR("USB-HID keyboard report sent error.");
         }
-        LOG_INF("\n");
-    
-
     }
 }
 
@@ -81,7 +94,7 @@ static int init(void)
     int rv = 0;
     do
     {
-        const struct device* hid_dev = device_get_binding("HID_0");
+        hid_dev = device_get_binding("HID_0");
 	    if (hid_dev == NULL) {
 	    	LOG_ERR("Cannot get USB HID Device");
 	    	rv = -EIO;
