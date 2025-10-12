@@ -117,11 +117,48 @@ static int cmd_click(const struct shell *sh, size_t argc, char **argv)
     return rv;
 }
 
+static int cmd_print_descriptor(const struct shell *sh, size_t argc, char **argv)
+{
+    app_usb_print_descriptor();
+    return 0;
+}
+
+
+static int cmd_play_pause(const struct shell *sh, size_t argc, char **argv)
+{
+    app_usb_play_pause();
+    return 0;
+}
+
+static int cmd_volume_up(const struct shell *sh, size_t argc, char **argv)
+{
+    app_usb_volume_up();
+    return 0;
+}
+
+static int cmd_volume_down(const struct shell *sh, size_t argc, char **argv)
+{
+    app_usb_volume_down();
+    return 0;
+}
+
+static int cmd_mute(const struct shell *sh, size_t argc, char **argv)
+{
+    app_usb_mute();
+    return 0;
+}
+
+
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_app,
         SHELL_CMD_ARG(press, NULL, "Simulate press.", cmd_press, 1, 1),
         SHELL_CMD_ARG(release, NULL, "Simulate release", cmd_release, 1, 1),
         SHELL_CMD_ARG(click, NULL, "Simulate click", cmd_click, 1, 1),
+        SHELL_CMD(descriptor, NULL, "USB descriptor", cmd_print_descriptor),
+        SHELL_CMD(play_pause, NULL, "USB descriptor", cmd_play_pause),
+        SHELL_CMD(volume_up, NULL, "USB descriptor", cmd_volume_up),
+        SHELL_CMD(volume_down, NULL, "USB descriptor", cmd_volume_down),
+        SHELL_CMD(mute, NULL, "USB descriptor", cmd_mute),
         SHELL_SUBCMD_SET_END
 );
 

@@ -18,7 +18,36 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app_usb, LOG_LEVEL_INF);
 
-static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
+// https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+// https://notes.iopush.net/blog/2016/custom-usb-hid-device-descriptor-media-keyboard/
+// https://www.silabs.com/documents/public/application-notes/AN249.pdf?utm_source=chatgpt.com 
+
+#define PLAY_PAUSE          0xCD
+#define VOLUME_UP           0xE9
+#define VOLUME_DOWN         0xEA
+#define MUTE                0xE2
+
+#define HID_CUSTOM_REPORT_DESC() {				    \
+	HID_USAGE_PAGE(0x0C),			                \
+	HID_USAGE(0x01),		                        \
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),		\
+        HID_LOGICAL_MIN8(0),                        \
+        HID_LOGICAL_MAX8(1),                        \
+        HID_USAGE(PLAY_PAUSE),                      \       
+        HID_USAGE(VOLUME_UP),                       \       
+        HID_USAGE(VOLUME_DOWN),                     \      
+        HID_USAGE(MUTE),                            \      
+        HID_REPORT_SIZE(1),                         \
+        HID_REPORT_COUNT(3),                        \
+        HID_INPUT(0x02),                            \
+        HID_REPORT_SIZE(5),                         \
+        HID_REPORT_COUNT(1),                        \
+        HID_INPUT(0x03),                            \
+    HID_END_COLLECTION,                             \
+}
+
+//static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
+static const uint8_t hid_report_desc[] = HID_CUSTOM_REPORT_DESC();
 static enum usb_dc_status_code usb_status;
 
 static const struct device* hid_dev = NULL;
@@ -121,8 +150,116 @@ static int init(void)
         }
 
     } while (false);
+
     return rv;
 }
 
 SYS_INIT_NAMED(APP_USB, init, APPLICATION, 0);
+
+int app_usb_print_descriptor(void)
+{
+    LOG_HEXDUMP_INF(hid_report_desc, sizeof(hid_report_desc), "HID report descriptor");
+
+    return 0;
+}
+
+int app_usb_play_pause(void)
+{
+    LOG_INF("PLAY/PAUSE");
+    UDC_STATIC_BUF_DEFINE(report, 1);
+    *((uint8_t*)(report)) = (0x1 << 0);
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    int rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    *((uint8_t*)(report)) = 0;
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    return 0;
+}
+
+int app_usb_volume_up(void)
+{
+    LOG_INF("VOLUME UP");
+    UDC_STATIC_BUF_DEFINE(report, 1);
+    *((uint8_t*)(report)) = (0x1 << 1);
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    int rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    *((uint8_t*)(report)) = 0;
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    return 0;
+}
+
+int app_usb_volume_down(void)
+{
+    LOG_INF("VOLUME DOWN");
+    UDC_STATIC_BUF_DEFINE(report, 1);
+    *((uint8_t*)(report)) = (0x1 << 2);
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    int rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    *((uint8_t*)(report)) = 0;
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    return 0;
+}
+
+int app_usb_mute(void)
+{
+    LOG_INF("MUTE");
+    UDC_STATIC_BUF_DEFINE(report, 1);
+    *((uint8_t*)(report)) = (0x1 << 3);
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    int rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    *((uint8_t*)(report)) = 0;
+    LOG_INF("Report 0x%02x", *((uint8_t*)(report)));
+    rv = hid_int_ep_write(hid_dev, report, 1, NULL);
+    if (0 == rv) {
+        k_sem_take(&ep_write_sem, K_FOREVER);
+        LOG_INF("USB-HID keyboard report sent.");
+    } else {
+        LOG_ERR("USB-HID keyboard report sent error.");
+    }
+    return 0;
+}
 
