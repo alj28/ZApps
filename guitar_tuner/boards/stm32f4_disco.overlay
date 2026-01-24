@@ -18,3 +18,18 @@
 	};
 };
 
+&i2s2 {
+    status = "okay";
+    pinctrl-0 = <&i2s2_ck_pb10 &i2s2_sd_pc3 &i2s2_ws_pb12>;
+    pinctrl-names = "default";
+};
+
+/* In order to work "semi-correct" configure the frequency of the i2s
+ * PLL that is the same as freuqnecy of the PCLK1Frequ - due to the bug in the
+ * i2s_ll_stm32.
+ */
+&plli2s {
+	mul-n = < 84 >;
+	div-r = < 2 >;
+};
+

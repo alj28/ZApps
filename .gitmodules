@@ -1,0 +1,3 @@
+[submodule "modules/pyswd"]
+	path = modules/pyswd
+	url = git@github.com:cortexm/pyswd.git

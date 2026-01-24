@@ -1,4 +1,6 @@
 .venv
-modules
+modules/crypto/
+modules/hal/
+modules/lib/
 zephyr
 *build*

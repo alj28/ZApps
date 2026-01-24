@@ -46,7 +46,7 @@ int init(void)
     return rv;
 }
 
-void thread(void *p1, void *p2, void *p3)
+static void thread(void *p1, void *p2, void *p3)
 {
     int ret = init();
     if (ret < 0) {

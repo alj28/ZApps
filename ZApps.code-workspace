@@ -23,7 +23,41 @@
 				"runToEntryPoint": "main",
 				"cwd": "${workspaceFolder}",
 				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
-			  }
+			},
+			{
+				"name": "guitar_tuner_launch",
+				"type": "cortex-debug",
+				"request": "launch",
+				"executable": "${workspaceFolder}/guitar_tuner/build/zephyr/zephyr.elf",
+				"servertype": "stlink",
+				"device": "STM32F507VG",
+				"interface": "swd",
+				"configFiles": [
+				  "interface/stlink.cfg",
+				  "target/stm32f4x.cfg"
+				],
+				"runToEntryPoint": "main",
+				"cwd": "${workspaceFolder}",
+				"svdFile": "${workspaceFolder}/svd/STM32F407.svd",
+				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
+			},
+			{
+				"name": "guitar_tuner_attach",
+				"type": "cortex-debug",
+				"request": "attach",
+				"executable": "${workspaceFolder}/guitar_tuner/build/zephyr/zephyr.elf",
+				"servertype": "stlink",
+				"device": "STM32F507VG",
+				"interface": "swd",
+				"configFiles": [
+				  "interface/stlink.cfg",
+				  "target/stm32f4x.cfg"
+				],
+				"runToEntryPoint": "main",
+				"cwd": "${workspaceFolder}",
+				"svdFile": "${workspaceFolder}/svd/STM32F407.svd",
+				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
+			}
 		],
 		"compounds": []
 	}
