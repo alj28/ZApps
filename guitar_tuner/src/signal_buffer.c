@@ -14,6 +14,12 @@ LOG_MODULE_REGISTER(signal_buffer, LOG_LEVEL_INF);
 static int32_t audio_samples[AUDIO_SAMPLES_SIZE]; 
 static size_t audio_samples_indx = 0;
 
+void push_to_signal_buffer(int32_t sample)
+{
+    audio_samples[audio_samples_indx] = sample;
+    audio_samples_indx = (audio_samples_indx + 1) & ((1 << 14) - 1);
+}
+
 static void thread(void *p1, void *p2, void *p3)
 {
     
@@ -25,5 +31,5 @@ static void thread(void *p1, void *p2, void *p3)
     }
 }
 
-K_THREAD_DEFINE(signal_buffer_thread_id, STACKSIZE, thread, NULL, NULL, NULL,
-		PRIORITY, 0, 0);
+//K_THREAD_DEFINE(signal_buffer_thread_id, STACKSIZE, thread, NULL, NULL, NULL,
+//		PRIORITY, 0, 0);

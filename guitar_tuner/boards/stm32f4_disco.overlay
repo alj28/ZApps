@@ -10,6 +10,14 @@
 		zephyr,console = &cdc_acm_uart0;
 		zephyr,shell-uart = &cdc_acm_uart0;
 	};
+
+	debug_leds {
+		compatible = "gpio-leds";
+		debug_led_0: dled_0 {
+			gpios = < &gpioc 1 GPIO_ACTIVE_HIGH>;
+			label = "Debug LED 0";
+		};
+	};
 };
 
 &zephyr_udc0 {
@@ -32,4 +40,7 @@
 	mul-n = < 84 >;
 	div-r = < 2 >;
 };
+
+
+
 

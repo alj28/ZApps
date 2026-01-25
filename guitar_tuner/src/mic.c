@@ -3,15 +3,25 @@
 #include <zephyr/drivers/i2s.h>
 //#include <zephyr/audio/dmic_sw_filter.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/drivers/led.h>
+
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+
+#include "signal_buffer.h"
 
 
-#define BLOCK_SIZE 256
+#define BLOCK_SIZE 32
 #define NUM_BLOCKS 4
 
 #define STACKSIZE 1024
 #define PRIORITY 7
 #define SLEEP_TIME_MS 100
 
+
+#define DEBUG_LED_0 DT_NODELABEL(debug_led_0)
+
+const struct gpio_dt_spec debug_led = GPIO_DT_SPEC_GET(DEBUG_LED_0, gpios);
 
 K_MEM_SLAB_DEFINE_STATIC(rx_slab, BLOCK_SIZE, NUM_BLOCKS, 4);
 
@@ -27,19 +37,19 @@ static void thread(void *p1, void *p2, void *p3)
         return;
     }
 
+    gpio_pin_configure_dt(&debug_led, GPIO_OUTPUT_ACTIVE);
+    
 
     // --- Configure I2S RX ---
     struct i2s_config i2s_cfg = {
         .word_size = 32, // dummy for PDM
         .channels = 1, // mono PDM
-        .format = I2S_FMT_DATA_FORMAT_I2S,
+        .format = (I2S_FMT_DATA_FORMAT_I2S | I2S_FMT_BIT_CLK_INV),
         .frame_clk_freq = 16000, // PDM clock
         .block_size = BLOCK_SIZE,
         .mem_slab = &rx_slab,
         .timeout = 2000,
         .options = (I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER),
-        //.options = (I2S_OPT_BIT_CLK_MASTER),
-        //.options = (I2S_OPT_FRAME_CLK_MASTER),
     };
 
 
@@ -56,21 +66,41 @@ static void thread(void *p1, void *p2, void *p3)
     }
 
     printk("Start I2S loop");
+    int32_t output_prev = 0;
     // --- Main loop ---
     while (1) {
-        void *pdm_block;
+        uint32_t *pdm_block;
         size_t size = BLOCK_SIZE;
 
 
-        int ret = i2s_read(i2s_dev, &pdm_block, &size);
+        int ret = i2s_read(i2s_dev, (void*)&pdm_block, &size);
         if (ret == 0) {
-            //int16_t pcm[64]; // depends on decimation factor
-            //int pcm_samples = dmic_sw_filter_process(&filter, pdm_block, size, pcm);
-            //
-            //
-            //if (pcm_samples > 0) {
-            //    process_audio_samples(pcm, pcm_samples);
-            //}
+            size = (size >> 2);
+            int32_t output = 0;
+            for (size_t i = 0; i < size; i++)
+            {
+                uint32_t sample = pdm_block[i];
+                uint32_t intermediate_count = 0;
+                for (size_t b = 0; b < 32; b++)
+                {
+                    intermediate_count += (sample & 0x1);
+                    sample = sample >> 1;
+                }
+
+                int32_t inc = intermediate_count;
+                int32_t dec = (32 - intermediate_count) * (-1);
+
+                output += ((inc + dec) << 7);
+            }
+
+            //int32_t comb = output - output_prev;
+            //output_prev = output;
+
+            //int32_t pcm_sample = comb >> 8;
+
+            push_to_signal_buffer(output);
+            gpio_pin_toggle_dt(&debug_led);
+
             k_mem_slab_free(&rx_slab, pdm_block);
         }
     }
