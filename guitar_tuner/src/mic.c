@@ -90,7 +90,8 @@ static void thread(void *p1, void *p2, void *p3)
                 int32_t inc = intermediate_count;
                 int32_t dec = (32 - intermediate_count) * (-1);
 
-                output += ((inc + dec) << 7);
+                //output += ((inc + dec) << 7);
+                output += (inc + dec);
             }
 
             //int32_t comb = output - output_prev;
