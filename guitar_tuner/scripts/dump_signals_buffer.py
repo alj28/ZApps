@@ -46,27 +46,23 @@ def get_buffer_size():
 
     return -1
 
-def get_signal_buffer_addresses():
-    buffer_size = get_buffer_size()
-    buffer_index = get_var_value_by_name(SIGNAL_BUFFER_VAR_INDEX_NAME)
+def generate_samples_address_vector():
     buffer_address = get_var_address(SIGNAL_BUFFER_VAR_NAME)
+    buffer_index = get_var_value_by_name(SIGNAL_BUFFER_VAR_INDEX_NAME)
+    buffer_size = get_buffer_size()
 
-    #return [(buffer_address + 4*(i%buffer_size)) for i in range(buffer_index + 1, buffer_index + buffer_size + 1)]
-    return [(buffer_address + 4*(i%buffer_size)) for i in range(buffer_index + 1, buffer_index + buffer_size + 1)]
+    indexes = [(buffer_index + i)%buffer_size for i in range(buffer_size)]
+
+    return [buffer_address + i*2 for i in indexes]
 
 def read_buffer(addresses):
     output = []
     for a in addresses:
-        val = get_var_value_by_address(a)
-        val &= 0xFFFFFFFF
-        #val1 = val & 0xFFFF
-        #val2 = (val >> 16) & 0xFFFF
-        #val1 = val1 if val1 < 0x8000 else (val1 - 0x10000)
-        #val2 = val2 if val2 < 0x8000 else (val2 - 0x10000)
-        #output += [val1]
-        #output += [val2]
-        val = val if val < 0x80000000 else (val - 0x100000000)
-        output += [val]
+        byte_list = [b for b in dev.read_mem(a, 2)]
+        v = byte_list[0]
+        v += (byte_list[1] << 8)
+        v = v if v < 0x8000 else (v - 0x10000)
+        output += [v]
     return output
 
 def store_buffer_to_csv(samples, file_name):
@@ -76,7 +72,8 @@ def store_buffer_to_csv(samples, file_name):
     df = pd.DataFrame(d)
     df.to_csv(file_name)
 
-if "__main__" == __name__:
+
+if '__main__' == __name__:
     parser = argparse.ArgumentParser(prog='dump signals buffer')
     parser.add_argument('output')
     args = parser.parse_args()
@@ -89,9 +86,11 @@ if "__main__" == __name__:
 
     print("Start reading memory")
     cm.halt()
-    buffer_addresses = get_signal_buffer_addresses()
-    buffer = read_buffer(buffer_addresses)
+    addresses = generate_samples_address_vector()
+    data = read_buffer(addresses)
     cm.run()
 
     print("Writing to file.")
-    store_buffer_to_csv(buffer, args.output)
+    store_buffer_to_csv(data, args.output)
+
+
