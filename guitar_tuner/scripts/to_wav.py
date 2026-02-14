@@ -9,7 +9,7 @@ def import_data(file_name):
     return df["val"]
 
 def export_to_wav(samples, file_name):
-    FRAME_RATE = 4e3
+    FRAME_RATE = 16e3
     BIT_DEPTH = 16
     with wave.open(file_name, mode="wb") as wav_file:
         wav_file.setnchannels(1)

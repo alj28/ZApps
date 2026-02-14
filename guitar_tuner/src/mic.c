@@ -9,6 +9,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #include "signal_buffer.h"
+#include "mic_filter.h"
 
 
 #define BLOCK_SIZE 32
@@ -20,8 +21,10 @@
 
 
 #define DEBUG_LED_0 DT_NODELABEL(debug_led_0)
+#define DEBUG_LED_1 DT_NODELABEL(debug_led_1)
 
 const struct gpio_dt_spec debug_led = GPIO_DT_SPEC_GET(DEBUG_LED_0, gpios);
+const struct gpio_dt_spec debug_led_1 = GPIO_DT_SPEC_GET(DEBUG_LED_1, gpios);
 
 K_MEM_SLAB_DEFINE_STATIC(rx_slab, BLOCK_SIZE, NUM_BLOCKS, 4);
 
@@ -38,6 +41,7 @@ static void thread(void *p1, void *p2, void *p3)
     }
 
     gpio_pin_configure_dt(&debug_led, GPIO_OUTPUT_ACTIVE);
+    gpio_pin_configure_dt(&debug_led_1, GPIO_OUTPUT_ACTIVE);
     
 
     // --- Configure I2S RX ---
@@ -65,6 +69,8 @@ static void thread(void *p1, void *p2, void *p3)
         return;
     }
 
+    mic_filter_init();
+
     printk("Start I2S loop");
     int32_t output_prev = 0;
     // --- Main loop ---
@@ -72,7 +78,7 @@ static void thread(void *p1, void *p2, void *p3)
         uint32_t *pdm_block;
         size_t size = BLOCK_SIZE;
 
-
+#if 0
         int ret = i2s_read(i2s_dev, (void*)&pdm_block, &size);
         if (ret == 0) {
             size = (size >> 2);
@@ -104,6 +110,32 @@ static void thread(void *p1, void *p2, void *p3)
 
             k_mem_slab_free(&rx_slab, pdm_block);
         }
+#else
+        int ret = i2s_read(i2s_dev, (void*)&pdm_block, &size);
+        if (ret == 0) {
+            size = (size >> 2);
+            int32_t output = 0;
+            gpio_pin_set_dt(&debug_led_1, 1);
+            for (size_t i = 0; i < size; i++)
+            {
+                uint32_t sample = pdm_block[i];
+                for (size_t b = 0; b < 32; b++)
+                {
+                    int32_t is_new_sample_available = mic_filter_push(sample & 0x1);
+                    if (0 != is_new_sample_available)
+                    {
+                        push_to_signal_buffer(mic_filter_get_last_output());
+                    }
+                    sample = sample >> 1;
+                }
+            }
+            gpio_pin_set_dt(&debug_led_1, 0);
+
+            gpio_pin_toggle_dt(&debug_led);
+
+            k_mem_slab_free(&rx_slab, pdm_block);
+        }
+#endif
     }
 }
 

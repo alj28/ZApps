@@ -51,6 +51,7 @@ def get_signal_buffer_addresses():
     buffer_index = get_var_value_by_name(SIGNAL_BUFFER_VAR_INDEX_NAME)
     buffer_address = get_var_address(SIGNAL_BUFFER_VAR_NAME)
 
+    #return [(buffer_address + 4*(i%buffer_size)) for i in range(buffer_index + 1, buffer_index + buffer_size + 1)]
     return [(buffer_address + 4*(i%buffer_size)) for i in range(buffer_index + 1, buffer_index + buffer_size + 1)]
 
 def read_buffer(addresses):
@@ -58,6 +59,12 @@ def read_buffer(addresses):
     for a in addresses:
         val = get_var_value_by_address(a)
         val &= 0xFFFFFFFF
+        #val1 = val & 0xFFFF
+        #val2 = (val >> 16) & 0xFFFF
+        #val1 = val1 if val1 < 0x8000 else (val1 - 0x10000)
+        #val2 = val2 if val2 < 0x8000 else (val2 - 0x10000)
+        #output += [val1]
+        #output += [val2]
         val = val if val < 0x80000000 else (val - 0x100000000)
         output += [val]
     return output

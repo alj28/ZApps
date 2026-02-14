@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void push_to_signal_buffer(int32_t sample);
+void push_to_signal_buffer(int16_t sample);
 
 #endif

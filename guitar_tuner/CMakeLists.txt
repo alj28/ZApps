@@ -12,4 +12,15 @@ target_sources(app
         src/mic.c
         src/signal_buffer.c
         src/board_cli.c
+        #src/cic.c
+        #src/mic_filter.c
+        src/pdm_to_pcm/cic.c
+        src/pdm_to_pcm/decimator.c
+        src/pdm_to_pcm/mic_filter.c
+)
+
+target_include_directories(app
+    PRIVATE
+        ./src
+        ./src/pdm_to_pcm
 )

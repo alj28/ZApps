@@ -57,7 +57,18 @@
 				"cwd": "${workspaceFolder}",
 				"svdFile": "${workspaceFolder}/svd/STM32F407.svd",
 				"gdbPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb"
-			}
+			},
+    		{
+    		  "name": "Python: Debug Current File",
+    		  "type": "debugpy",
+    		  "request": "launch",
+    		  "program": "${workspaceFolder}/guitar_tuner/scripts/cic_demo_3.py",
+    		  "console": "integratedTerminal",
+    		  "justMyCode": true,
+    		  "stopOnEntry": false,
+    		  "cwd": "${workspaceFolder}",
+    		  "env": {}
+    		}
 		],
 		"compounds": []
 	}

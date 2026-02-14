@@ -17,6 +17,10 @@
 			gpios = < &gpioc 1 GPIO_ACTIVE_HIGH>;
 			label = "Debug LED 0";
 		};
+		debug_led_1: dled_1 {
+			gpios = < &gpioa 1 GPIO_ACTIVE_HIGH>;
+			label = "Debug LED 1";
+		};
 	};
 };
 

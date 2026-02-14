@@ -15,5 +15,10 @@ manifest:
           - cmsis
           - mbedtls
 
+    - name: cmsis-dsp
+      url: https://github.com/ARM-software/CMSIS-DSP.git
+      path: modules/lib/cmsis-dsp
+      revision: main
+
   self:
     path: zephyr
