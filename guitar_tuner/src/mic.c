@@ -46,10 +46,11 @@ static void thread(void *p1, void *p2, void *p3)
 
     // --- Configure I2S RX ---
     struct i2s_config i2s_cfg = {
-        .word_size = 32, // dummy for PDM
+        .word_size = 16, // dummy for PDM
         .channels = 1, // mono PDM
-        .format = (I2S_FMT_DATA_FORMAT_I2S | I2S_FMT_BIT_CLK_INV),
-        .frame_clk_freq = 16000, // PDM clock
+        .format = (I2S_FMT_DATA_FORMAT_RIGHT_JUSTIFIED | I2S_FMT_BIT_CLK_INV),
+        //.format = (I2S_FMT_DATA_FORMAT_RIGHT_JUSTIFIED),
+        .frame_clk_freq = 4*16000, // PDM clock
         .block_size = BLOCK_SIZE,
         .mem_slab = &rx_slab,
         .timeout = 2000,
@@ -75,7 +76,7 @@ static void thread(void *p1, void *p2, void *p3)
     int32_t output_prev = 0;
     // --- Main loop ---
     while (1) {
-        uint32_t *pdm_block;
+        uint16_t *pdm_block;
         size_t size = BLOCK_SIZE;
 
 #if 0
@@ -113,13 +114,14 @@ static void thread(void *p1, void *p2, void *p3)
 #else
         int ret = i2s_read(i2s_dev, (void*)&pdm_block, &size);
         if (ret == 0) {
-            size = (size >> 2);
-            int32_t output = 0;
+            size = (size >> 1);
             gpio_pin_set_dt(&debug_led_1, 1);
             for (size_t i = 0; i < size; i++)
             {
-                uint32_t sample = pdm_block[i];
-                for (size_t b = 0; b < 32; b++)
+                uint16_t sample = pdm_block[i];
+#if 0
+                sample = ((sample & 0xFF00) >> 8) | ((sample & 0x00FF) << 8);
+                for (size_t b = 0; b < (sizeof(sample) * 8); b++)
                 {
                     int32_t is_new_sample_available = mic_filter_push(sample & 0x1);
                     if (0 != is_new_sample_available)
@@ -128,6 +130,16 @@ static void thread(void *p1, void *p2, void *p3)
                     }
                     sample = sample >> 1;
                 }
+#else
+                for (int32_t b = (sizeof(sample) * 8 - 1); b >= 0; b--)
+                {
+                    int32_t is_new_sample_available = mic_filter_push((sample >> b) & 0x1);
+                    if (0 != is_new_sample_available)
+                    {
+                        push_to_signal_buffer(mic_filter_get_last_output());
+                    }
+                }
+#endif
             }
             gpio_pin_set_dt(&debug_led_1, 0);
 

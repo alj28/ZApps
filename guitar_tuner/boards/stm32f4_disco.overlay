@@ -45,6 +45,10 @@
 	div-r = < 2 >;
 };
 
+&i2s2_sd_pc3 {
+	slew-rate = "high-speed";
+};
+
 
 
 
